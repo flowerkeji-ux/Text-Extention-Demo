@@ -16,7 +16,6 @@
   html, body { height:100%; margin:0; }
   body { display:flex; background:var(--bg); color:var(--ink); font:17px/1.65 Georgia, "Times New Roman", serif; }
 
-  /* Left: the article (this is the scrolling area) */
   #article { flex:1; min-width:0; overflow:auto; }
   .inner { max-width:46rem; margin:0 auto; padding:2rem 1.25rem 4rem; overflow-wrap:anywhere; }
   h1, h2, h3, h4 { font-family: system-ui, sans-serif; line-height:1.25; }
@@ -25,19 +24,23 @@
   h3 { font-size:1.2rem; margin:1.6em 0 .5em; }
   .inner a { color:var(--link); text-decoration:none; }
   img { max-width:100%; height:auto; }
+  
   table { max-width:100%; border-collapse:collapse; font:.88rem/1.45 system-ui, sans-serif; }
+  
   th, td { padding:.3rem .5rem; vertical-align:top; }
+  
   .infobox { float:right; clear:right; width:20rem; max-width:100%; margin:0 0 1rem 1.25rem; background:var(--soft); }
+ 
   .tright { float:right; clear:right; margin:0 0 1rem 1.25rem; max-width:50%; }
   .tleft { float:left; clear:left; margin:0 1.25rem 1rem 0; max-width:50%; }
   .thumbcaption, .references, .reflist { color:var(--muted); font:.85rem/1.4 system-ui, sans-serif; }
   sup { line-height:0; }
+  
   .credit { clear:both; margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); color:var(--muted); font:.85rem system-ui, sans-serif; }
   ::highlight(all) { background:#ffe58a; color:#000; }
   ::highlight(cur) { background:#ff9d2e; color:#000; }
   mark.wf-highlight { background:#ffe58a; color:#000; }
 
-  /* Right: the side panel holds only the search box */
   aside { width:clamp(13rem, 32vw, 21rem); flex:none; padding:.75rem; background:var(--panel); border-left:1px solid var(--line); overflow:auto;
           display:flex; align-items:center; justify-content:center; }
   :focus-visible { outline:2px solid #5ac761; outline-offset:2px; }
@@ -142,15 +145,14 @@
 </aside>
 
 <script>
-const WIKI = 'https://en.wikipedia.org', TITLE = 'United States';   // change TITLE to show another article
+const WIKI = 'https://en.wikipedia.org', TITLE = 'United States';   
 const $ = id => document.getElementById(id);
 const scroller = $('article'), content = $('content');
 const input = $('Search-Input'), button = $('Search-Button'), result = $('result');
 let matches = [], idx = -1, lastQuery = '';
 
-input.disabled = button.disabled = true;   // enabled once the article has loaded
+input.disabled = button.disabled = true;   
 
-/* ---------- Load the article ---------- */
 fetch(WIKI + '/w/api.php?' + new URLSearchParams({
   action: 'parse', page: TITLE, prop: 'text', redirects: 1, format: 'json', formatversion: 2,
   disableeditsection: 1, disabletoc: 1, disablelimitreport: 1, origin: '*'
@@ -180,9 +182,7 @@ fetch(WIKI + '/w/api.php?' + new URLSearchParams({
     input.disabled = button.disabled = false;
     input.focus();
   })
-  .catch(err => { content.textContent = 'Couldn’t load the article (' + err.message + '). Check your connection and reload the page.'; });
-
-/* ---------- Search ---------- */
+  .catch(err => { content.textContent = 'couldnt load the article (' + err.message + ').'; });
 function highlightWord(word) {
   const root = document.getElementById('content') || document.body;
   root.querySelectorAll('mark.wf-highlight').forEach(mark => {
@@ -230,7 +230,7 @@ function highlightWord(word) {
 async function runSearch() {
   const word = input.value.trim();
   button.disabled = true;
-  result.textContent = 'Searching…';
+  result.textContent = 'searching…';
   try {
     let count;
     if (typeof chrome !== 'undefined' && chrome.tabs && chrome.scripting) {
@@ -248,7 +248,7 @@ async function runSearch() {
     else result.textContent = count + (count === 1 ? ' match' : ' matches') + ' found';
   } catch (error) {
     console.error('Search failed:', error);
-    result.textContent = "Couldn't complete search: " + error.message;
+    result.textContent = "Couldnt complete search: " + error.message;
   } finally {
     button.disabled = false;
   }
