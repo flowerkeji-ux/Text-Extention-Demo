@@ -1,136 +1,278 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-   
-   <link rel="preconnect" href="https://fonts.googleapis.com">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-    <title>Document</title>
- <style>
-    * {
-      box-sizing: border-box;
-    }
+<title>Text Spider demo</title>
+<style>
+  :root { --bg:#fbfcfd; --panel:#081828; --ink:#1d2733; --muted:#5d6b79; --line:#d6dde4; --soft:#eef2f6; --link:#2a5db0; color-scheme: light dark; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#13181d; --panel:#1a2128; --ink:#e3e9ee; --muted:#97a5b2; --line:#2d3946; --soft:#1d252d; --link:#7aa7ee; }
+  }
+  * { box-sizing: border-box; }
+  html, body { height:100%; margin:0; }
+  body { display:flex; background:var(--bg); color:var(--ink); font:17px/1.65 Georgia, "Times New Roman", serif; }
+
+  /* Left: the article (this is the scrolling area) */
+  #article { flex:1; min-width:0; overflow:auto; }
+  .inner { max-width:46rem; margin:0 auto; padding:2rem 1.25rem 4rem; overflow-wrap:anywhere; }
+  h1, h2, h3, h4 { font-family: system-ui, sans-serif; line-height:1.25; }
+  h1 { font-size:2.1rem; margin:0 0 1rem; }
+  h2 { font-size:1.5rem; margin:2.2em 0 .6em; padding-bottom:.25rem; border-bottom:1px solid var(--line); }
+  h3 { font-size:1.2rem; margin:1.6em 0 .5em; }
+  .inner a { color:var(--link); text-decoration:none; }
+  img { max-width:100%; height:auto; }
+  table { max-width:100%; border-collapse:collapse; font:.88rem/1.45 system-ui, sans-serif; }
+  th, td { padding:.3rem .5rem; vertical-align:top; }
+  .infobox { float:right; clear:right; width:20rem; max-width:100%; margin:0 0 1rem 1.25rem; background:var(--soft); }
+  .tright { float:right; clear:right; margin:0 0 1rem 1.25rem; max-width:50%; }
+  .tleft { float:left; clear:left; margin:0 1.25rem 1rem 0; max-width:50%; }
+  .thumbcaption, .references, .reflist { color:var(--muted); font:.85rem/1.4 system-ui, sans-serif; }
+  sup { line-height:0; }
+  .credit { clear:both; margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); color:var(--muted); font:.85rem system-ui, sans-serif; }
+  ::highlight(all) { background:#ffe58a; color:#000; }
+  ::highlight(cur) { background:#ff9d2e; color:#000; }
+  mark.wf-highlight { background:#ffe58a; color:#000; }
+
+  /* Right: the side panel holds only the search box */
+  aside { width:clamp(13rem, 32vw, 21rem); flex:none; padding:.75rem; background:var(--panel); border-left:1px solid var(--line); overflow:auto;
+          display:flex; align-items:center; justify-content:center; }
+  :focus-visible { outline:2px solid #5ac761; outline-offset:2px; }
+
+.download {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 5px 5px;
+  border: 1px solid #c75a5a;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #430629, #2d1248);
+  font-size: 10px;
+  color: white;
+  text-decoration: none;
+  font-family: sans-serif;
+  box-shadow: 0 0 16px rgba(145, 69, 255, 0.35);
+  transition: box-shadow 150ms ease, transform 100ms ease;
+}
+.download:hover {
+  transform: scale(1.05);
+}
 
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: "Orbitron", sans-serif;
-      color: #f1eaff;
-      background:
-        linear-gradient(-45deg, #0c0c30 0%, #3b0e17 50%, #090b26 100%);
-    }
+  /* Search box */
 
-    .container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 24px;
-      position: relative;
-      overflow: hidden;
-    }
+  .search-box {
+    width:100%;
+    max-width:340px;
+    margin:0 auto;
+    padding:28px 22px;
+    text-align:center;
+    font-family:'Orbitron', system-ui, sans-serif;
+    background:linear-gradient(145deg, rgba(24, 17, 61, 0.94), rgba(10, 13, 39, 0.96));
+    border:1px solid #c75a5a;
+    border-radius:16px;
+    box-shadow: 0 0 26px rgba(132, 54, 255, 0.28), inset 0 0 24px rgba(70, 36, 132, 0.2);
+  }
+  .search-box h1 {
+    margin:0 0 24px;
+    color:#f4eaff;
+    font-family:inherit;
+    font-size:27px;
+    letter-spacing:0.04em;
+    text-shadow:0 0 14px rgba(190, 120, 255, 0.8);
+  }
+  .search-box input {
+    width:100%;
+    padding:12px 15px;
+    border:1px solid #c75a5a;
+    border-radius:30px;
+    outline:none;
+    background-color:rgba(5, 7, 27, 0.82);
+    color:#c75a5a;
+    font-size:16px;
+    font-family:inherit;
+    box-shadow:0 0 12px rgba(190, 103, 255, 0.45);
+  }
+  .search-box input::placeholder { color:#b5a9ce; }
+  .search-box input:focus { border-color:#5ac761; }
+  .search-box button {
+    margin-top:16px;
+    padding:10px 25px;
+    border:1px solid #c75a5a;
+    border-radius:30px;
+    background:linear-gradient(135deg, #430629, #2d1248);
+    color:white;
+    font-size:16px;
+    font-family:inherit;
+    cursor:pointer;
+    box-shadow:0 0 16px rgba(145, 69, 255, 0.35);
+    transition:box-shadow 150ms ease, transform 150ms ease;
+  }
+  .search-box button:hover:not(:disabled) { box-shadow:0 0 10px rgba(189, 115, 255, 0.65); transform:scale(1.05); }
+  .search-box button:disabled, .search-box input:disabled { opacity:.5; cursor:default; }
+  #result { margin:16px 0 0; color:#c75a5a; font-size:16px; min-height:1.2em; }
 
-    .search-box {
-      width: 100%;
-      max-width: 340px;
-      padding: 28px 22px;
-      text-align: center;
-      background: linear-gradient(145deg, rgba(24, 17, 61, 0.94), rgba(10, 13, 39, 0.96));
-      border: 1px solid #c75a5a;
-      border-radius: 16px;
-      box-shadow:
-        0 0 26px rgba(132, 54, 255, 0.28),
-        inset 0 0 24px rgba(70, 36, 132, 0.2);
-      position: relative;
-      z-index: 1;
-    }
-
-    .search-box h1 {
-      margin: 0 0 24px;
-      color: #f4eaff;
-      font-size: 27px;
-      letter-spacing: 0.04em;
-      text-shadow: 0 0 14px rgba(190, 120, 255, 0.8);
-    }
-
-    .search-box input {
-      width: 100%;
-            box-shadow: 0 0 12px rgba(190, 103, 255, 0.45);
-
-      padding: 12px 15px;
-      border: 1px solid #c75a5a;
-      border-radius: 30px;
-      outline: none;
-      background-color: rgba(5, 7, 27, 0.82);
-      color: #c75a5a;
-      font-size: 16px;
-      font-family: inherit;
-    }
-
-
-    .search-box input::placeholder {
-      color: #b5a9ce;
-    }
-
-    .search-box input:focus {
-      border-color: #5ac761;
-      box-shadow: 0 0 12px rgba(190, 103, 255, 0.45);
-    }
-
-    .search-box button {
-      margin-top: 16px;
-      padding: 10px 25px;
-      border: 1px solid #c75a5a;
-        box-shadow: 0 0 12px rgba(190, 103, 255, 0.45);
-
-      border-radius: 30px;
-      background: linear-gradient(135deg, #430629, #2d1248);
-      color: white;
-      font-size: 16px;
-      font-family: inherit;
-      cursor: pointer;
-      box-shadow: 0 0 16px rgba(145, 69, 255, 0.35);
-      transition: box-shadow 150ms ease, transform 150ms ease;
-    }
-
-    .search-box button:hover {
-      box-shadow: 0 0 10px rgba(189, 115, 255, 0.65);
-      transform: scale(1.05);
-    }
-
-    #result {
-      margin: 16px 0 0;
-      color: #c75a5a;
-      font-size: 16px;
-      min-height: 1.2em;
-    }
-
-
-
-    @media (max-width: 600px) {
-      .search-box {
-        padding: 22px 16px;
-      }
-    }
-  </style>
-
+  @media (max-width:760px) {
+    .search-box { padding:18px 10px; }
+    .search-box h1 { font-size:18px; }
+    .search-box input { padding:10px 12px; font-size:14px; }
+    .search-box button { padding:8px 16px; font-size:14px; }
+    .infobox, .tright, .tleft { float:none; width:100%; max-width:100%; margin:0 0 1rem; }
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <div id="main-box" class="search-box">
-            <h1>Search Window</h1>
-            <input id="Search-Input" type="text" placeholder="Search for a word">
-            <button id="Search-Button">Search</button>
-            <p id="result"></p>
-          </div>
 
+<div id="article"><div class="inner" id="content"><p>Loading the article…</p></div></div>
+<aside aria-label="Search" style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+
+  <div class="container">
+    <div id="main-box" class="search-box">
+      <h1>Search Window</h1>
+      <input id="Search-Input" type="text" placeholder="Search for a word" autocomplete="off">
+      <button id="Search-Button" type="button">Search</button>
+      <p id="result" aria-live="polite"></p>
     </div>
-    
+  </div>
 
-<script src="TheDoer.js"></script>
+  <a style="display:block; margin:10px 0;" class="download" href="ZIPPED TEXT-SPIDER.zip" download>Download the Extension</a>
 
+</aside>
 
+<script>
+const WIKI = 'https://en.wikipedia.org', TITLE = 'United States';   // change TITLE to show another article
+const $ = id => document.getElementById(id);
+const scroller = $('article'), content = $('content');
+const input = $('Search-Input'), button = $('Search-Button'), result = $('result');
+let matches = [], idx = -1, lastQuery = '';
+
+input.disabled = button.disabled = true;   // enabled once the article has loaded
+
+/* ---------- Load the article ---------- */
+fetch(WIKI + '/w/api.php?' + new URLSearchParams({
+  action: 'parse', page: TITLE, prop: 'text', redirects: 1, format: 'json', formatversion: 2,
+  disableeditsection: 1, disabletoc: 1, disablelimitreport: 1, origin: '*'
+}))
+  .then(r => r.json())
+  .then(d => {
+    if (d.error) throw new Error(d.error.info);
+    const doc = new DOMParser().parseFromString(d.parse.text, 'text/html');
+    doc.querySelectorAll('script, style, iframe, link, .mw-editsection, .navbox, .metadata, .noprint, .mw-empty-elt, .shortdescription')
+      .forEach(el => el.remove());
+    doc.querySelectorAll('*').forEach(el => [...el.attributes].forEach(a => /^on/i.test(a.name) && el.removeAttribute(a.name)));
+    doc.querySelectorAll('img, source').forEach(el => {
+      const fix = v => v.replace(/(^|,\s*)\/\//g, '$1https://');
+      ['src', 'srcset'].forEach(k => el.getAttribute(k) && el.setAttribute(k, fix(el.getAttribute(k))));
+    });
+    doc.querySelectorAll('a[href]').forEach(a => {
+      const href = a.getAttribute('href');
+      if (href.startsWith('#')) return;
+      a.href = new URL(href, WIKI).href; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    });
+    const h1 = document.createElement('h1'), credit = document.createElement('p');
+    h1.textContent = d.parse.title;
+    credit.className = 'credit';
+    credit.innerHTML = 'From <a target="_blank" rel="noopener noreferrer" href="' + WIKI + '/wiki/' +
+      encodeURIComponent(d.parse.title.replace(/ /g, '_')) + '">Wikipedia</a>. Text is available under the Creative Commons Attribution-ShareAlike License.';
+    content.replaceChildren(h1, ...doc.body.childNodes, credit);
+    input.disabled = button.disabled = false;
+    input.focus();
+  })
+  .catch(err => { content.textContent = 'Couldn’t load the article (' + err.message + '). Check your connection and reload the page.'; });
+
+/* ---------- Search ---------- */
+function highlightWord(word) {
+  const root = document.getElementById('content') || document.body;
+  root.querySelectorAll('mark.wf-highlight').forEach(mark => {
+    mark.replaceWith(document.createTextNode(mark.textContent));
+  });
+  root.normalize();
+  if (!word) return 0;
+
+  const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const matcher = new RegExp('\\b' + escaped + '\\b', 'gi');
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      return ['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA'].includes(node.parentElement?.tagName)
+        ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const textNodes = [];
+  while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+  let total = 0;
+  textNodes.forEach(node => {
+    const text = node.data;
+    let match, lastIndex = 0, fragment = null;
+    matcher.lastIndex = 0;
+    while ((match = matcher.exec(text))) {
+      if (!fragment) fragment = document.createDocumentFragment();
+      fragment.append(document.createTextNode(text.slice(lastIndex, match.index)));
+      const mark = document.createElement('mark');
+      mark.className = 'wf-highlight';
+      mark.style.background = "#8000ff";
+      mark.style.color = "#5ac761";
+      mark.textContent = match[0];
+      fragment.append(mark);
+      lastIndex = matcher.lastIndex;
+      total++;
+    }
+    if (fragment) {
+      fragment.append(document.createTextNode(text.slice(lastIndex)));
+      node.replaceWith(fragment);
+    }
+  });
+  return total;
+}
+
+async function runSearch() {
+  const word = input.value.trim();
+  button.disabled = true;
+  result.textContent = 'Searching…';
+  try {
+    let count;
+    if (typeof chrome !== 'undefined' && chrome.tabs && chrome.scripting) {
+      const [tab] = await chrome.tabs.query({ active:true, currentWindow:true });
+      if (!tab || tab.id === undefined) throw new Error('No active browser tab was found.');
+      const [answer] = await chrome.scripting.executeScript({
+        target:{ tabId:tab.id }, func:highlightWord, args:[word]
+      });
+      count = answer.result;
+    } else {
+      count = highlightWord(word);
+    }
+    if (!word) result.textContent = 'Search cleared.';
+    else if (!count) result.textContent = "Can't find word :/";
+    else result.textContent = count + (count === 1 ? ' match' : ' matches') + ' found';
+  } catch (error) {
+    console.error('Search failed:', error);
+    result.textContent = "Couldn't complete search: " + error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+button.addEventListener('click', runSearch);
+input.addEventListener('keydown', event => {
+  if (event.key === 'Enter') runSearch();
+  if (event.key === '#') rainbow();
+});
+
+let Timez4Rainbow;
+function rainbow() {
+  const panel = $('main-box');
+  if (!panel) return;
+  panel.style.background = 'linear-gradient(to right, rgba(21,255,0,.3), rgba(0,236,252,.3), rgba(0,46,252,.3), rgba(187,0,255,.3), rgba(255,0,191,.3), rgba(255,0,0,.3), rgba(255,123,0,.3), rgba(255,255,0,.3))';
+  result.textContent = 'Secret Easter egg 🙃';
+  clearTimeout(Timez4Rainbow);
+  Timez4Rainbow = setTimeout(() => {
+    result.textContent = '';
+    panel.style.background = 'linear-gradient(145deg, rgba(24,17,61,.94), rgba(10,13,39,.96))';
+  }, 3000);
+}
+
+</script>
 </body>
 </html>
